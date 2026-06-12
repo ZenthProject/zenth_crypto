@@ -1,0 +1,8 @@
+[package]
+name = "lms"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hbs-lms = "0.1"
+rand = "0.8"

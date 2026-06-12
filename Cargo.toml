@@ -1,0 +1,52 @@
+[package]
+name = "zenth_crypto"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+encoding             = { path = "encoding" }
+errors               = { path = "errors" }
+exchange             = { path = "exchange" }
+hashing              = { path = "hashing" }
+kdf                  = { path = "kdf" }
+symmetric             = { path = "symmetric" }
+aes_modes            = { path = "symmetric/aes_modes" }
+serpent_modes        = { path = "symmetric/serpent_modes" }
+twofish_modes        = { path = "symmetric/twofish_modes" }
+chacha_modes         = { path = "symmetric/chacha_modes" }
+protocols            = { path = "protocols" }
+utils                = { path = "utils" }
+kem                  = { path = "kem" }
+asymmetric           = { path = "asymmetric" }
+rsa_oaep             = { path = "asymmetric/rsa_oaep" }
+dilithium            = { path = "asymmetric/dilithium" }
+lms                  = { path = "asymmetric/lms" }
+sk_stark             = { path = "zk/sk_stark" }
+
+[workspace]
+resolver = "2"
+members = [
+    "encoding",
+    "errors",
+    "exchange",
+    "hashing",
+    "kdf",
+    "symmetric",
+    "symmetric/aes_modes",
+    "symmetric/serpent_modes",
+    "symmetric/twofish_modes",
+    "symmetric/chacha_modes",
+    "asymmetric",
+    "asymmetric/rsa_oaep",
+    "asymmetric/dilithium",
+    "asymmetric/lms",
+    "protocols",
+    "protocols/hpke",
+    "utils",
+    "kem",
+    "zk/sk_stark",
+]
+
+# Patch to use Signal's fork of curve25519-dalek for consistency
+[patch.crates-io]
+curve25519-dalek = { git = 'https://github.com/signalapp/curve25519-dalek', tag = 'signal-curve25519-4.1.3' }

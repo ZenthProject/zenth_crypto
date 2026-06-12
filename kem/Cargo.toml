@@ -1,0 +1,9 @@
+[package]
+name = "kem"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libcrux-ml-kem = { version = "0.0.8", default-features = false, features = ["kyber", "mlkem768", "mlkem1024"] }
+rand = "0.9"
+zeroize = { version = "1.8", features = ["derive"] }

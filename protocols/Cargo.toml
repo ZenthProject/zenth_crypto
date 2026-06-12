@@ -1,0 +1,28 @@
+[package]
+name = "protocols"
+version = "0.1.0"
+edition = "2024"
+description = "Cryptographic protocols including Double Ratchet"
+
+[dependencies]
+# Internal crates
+kdf = { path = "../kdf" }
+exchange = { path = "../exchange" }
+aes_modes = { path = "../symmetric/aes_modes" }
+errors = { path = "../errors" }
+kem = { path = "../kem" }  # Uses rand 0.9 via rand09
+
+# External crates
+hkdf = "0.12.4"
+sha2 = "0.10.9"
+rand = "0.8"
+rand09 = { package = "rand", version = "0.9" }  # Pour KEM/Kyber
+zeroize = { version = "1.8", features = ["derive"] }
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+
+[dependencies.hex]
+version = "0.4"
+
+[dev-dependencies]

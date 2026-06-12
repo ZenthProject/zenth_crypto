@@ -1,0 +1,80 @@
+image: rust:latest
+
+variables:
+  DEBIAN_FRONTEND: "noninteractive"
+  CARGO_TERM_COLOR: always
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+  IMAGE_TAG: "$HARBOR_HOST/$HARBOR_PROJECT/$CI_PROJECT_NAME:$CI_COMMIT_REF_SLUG"
+
+default:
+  timeout: 90m
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y --no-install-recommends cmake gcc clang libclang-dev pkg-config libssl-dev
+    - rustc --version && cargo --version
+
+stages:
+  - check
+  - test
+  - publish
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cargo/registry/
+    - .cargo/git/
+    - target/
+
+# ── Check ─────────────────────────────────────────────────────────────────────
+
+fmt:
+  stage: check
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+
+clippy:
+  stage: check
+  script:
+    - rustup component add clippy
+    - cargo clippy --all -- -D warnings
+
+# ── Test ──────────────────────────────────────────────────────────────────────
+
+test-stable:
+  stage: test
+  script:
+    - cargo test --all --verbose
+
+test-nightly:
+  stage: test
+  image: rustlang/rust:nightly
+  script:
+    - cargo test --all --verbose
+  allow_failure: true
+
+# ── Publish ───────────────────────────────────────────────────────────────────
+
+docker-build-push:
+  stage: publish
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$HARBOR_PASSWORD" | docker login "$HARBOR_HOST" -u "$HARBOR_USERNAME" --password-stdin
+  script:
+    - docker build -t "$IMAGE_TAG" .
+    - docker push "$IMAGE_TAG"
+    # Tag stable releases with the git tag as well
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker tag "$IMAGE_TAG" "$HARBOR_HOST/$HARBOR_PROJECT/$CI_PROJECT_NAME:$CI_COMMIT_TAG"
+        docker push "$HARBOR_HOST/$HARBOR_PROJECT/$CI_PROJECT_NAME:$CI_COMMIT_TAG"
+      fi
+  after_script:
+    - docker logout "$HARBOR_HOST"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG'

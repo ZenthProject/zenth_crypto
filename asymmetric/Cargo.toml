@@ -1,0 +1,9 @@
+[package]
+name = "asymmetric"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dilithium = { path = "./dilithium" }
+rsa_oaep = { path = "./rsa_oaep" }
+lms = { path = "./lms" }

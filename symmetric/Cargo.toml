@@ -1,0 +1,12 @@
+[package]
+name = "symmetric"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aes_modes = { path = "./aes_modes" }
+chacha_modes = { path = "./chacha_modes" }
+serpent_modes = { path = "./serpent_modes" }
+twofish_modes = { path = "./twofish_modes" }
+
+
