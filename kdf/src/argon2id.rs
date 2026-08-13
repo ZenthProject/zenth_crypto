@@ -7,6 +7,32 @@ use argon2::{
     },
 };
 use rand::rngs::OsRng;
+use zeroize::Zeroizing;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum Argon2Error {
+    #[error("invalid Argon2 parameters: {0}")]
+    Params(String),
+
+    #[error("salt too short: minimum 8 bytes required, got {0}")]
+    SaltTooShort(usize),
+
+    #[error("key derivation failed: {0}")]
+    Derivation(String),
+
+    #[error("hashing failed: {0}")]
+    Hash(String),
+
+    #[error("password verification failed: {0}")]
+    Verify(String),
+}
+
+
+const KEY_SIZE: usize = 32;
+const ARGON2_M_COST: u32 = 65_536;
+const ARGON2_T_COST: u32 = 3;
+const ARGON2_P_COST: u32 = 4;
 
 /// Argon2id hasher pre-configured with OWASP-recommended parameters.
 pub struct Argon2idHasher {
@@ -82,4 +108,33 @@ impl Argon2idHasher {
             .hash_password_into(password.as_bytes(), salt, &mut key)?;
         Ok(key)
     }
+
+    /// Dérive une clé SQLCipher à partir du mot de passe et du salt.
+    ///
+    /// Utilise Argon2id avec des paramètres sécurisés (64 MB, 3 itérations, 4 threads).
+    ///
+    /// # Errors
+    ///
+    /// Retourne une erreur si le salt est trop court ou si la dérivation échoue.
+    pub fn derive_sqlcipher_key(
+        password: &str,
+        salt: &[u8],
+    ) -> Result<Zeroizing<[u8; KEY_SIZE]>, Argon2Error> {
+        if salt.len() < 8 {
+            return Err(Argon2Error::SaltTooShort(salt.len()));
+        }
+
+        let params = Params::new(ARGON2_M_COST, ARGON2_T_COST, ARGON2_P_COST, Some(KEY_SIZE))
+            .map_err(|e| Argon2Error::Params(format!("Argon2 params error: {}", e)))?;
+
+        let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
+
+        let mut key = Zeroizing::new([0u8; KEY_SIZE]);
+        argon2
+            .hash_password_into(password.as_bytes(), salt, key.as_mut())
+            .map_err(|e| Argon2Error::Params(format!("Argon2 hash error: {}", e)))?;
+
+        Ok(key)
+    }
+
 }
