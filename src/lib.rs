@@ -24,3 +24,6 @@ pub use protocols;
 
 // Zero-knowledge proofs
 pub use sk_stark;
+
+//Key generation and hash generation
+pub use keygen;

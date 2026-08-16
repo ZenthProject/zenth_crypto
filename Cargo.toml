@@ -9,7 +9,7 @@ errors               = { path = "errors" }
 exchange             = { path = "exchange" }
 hashing              = { path = "hashing" }
 kdf                  = { path = "kdf" }
-symmetric             = { path = "symmetric" }
+symmetric            = { path = "symmetric" }
 aes_modes            = { path = "symmetric/aes_modes" }
 serpent_modes        = { path = "symmetric/serpent_modes" }
 twofish_modes        = { path = "symmetric/twofish_modes" }
@@ -22,7 +22,7 @@ rsa_oaep             = { path = "asymmetric/rsa_oaep" }
 dilithium            = { path = "asymmetric/dilithium" }
 lms                  = { path = "asymmetric/lms" }
 sk_stark             = { path = "zk/sk_stark" }
-
+keygen               = { path = "keygen" }
 
 [workspace]
 resolver = "2"
@@ -45,7 +45,8 @@ members = [
     "protocols/hpke",
     "utils",
     "kem",
-    "zk/sk_stark",
+    "zk/sk_stark", 
+    "keygen",
 ]
 
 # Patch to use Signal's fork of curve25519-dalek for consistency
