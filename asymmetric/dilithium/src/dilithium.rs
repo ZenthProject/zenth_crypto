@@ -1,7 +1,9 @@
-use pqcrypto_traits::sign::{PublicKey as TraitPublicKey, SecretKey as TraitSecretKey};
+use pqcrypto_traits::sign::{
+    DetachedSignature as TraitDetachedSignature, PublicKey as TraitPublicKey,
+    SecretKey as TraitSecretKey,
+};
 use serde::{Deserialize, Serialize};
 use std::fs;
-
 use pqcrypto_dilithium::dilithium2::{
     DetachedSignature, PublicKey, SecretKey, detached_sign, keypair, verify_detached_signature,
 };
@@ -80,6 +82,28 @@ pub fn save_keys(pub_key: &PublicKey, sec_key: &SecretKey, user_id: &str) -> std
     Ok(())
 }
 
+/// Signs a message with a Dilithium2 secret key supplied as raw bytes.
+///
+/// The key bytes are validated and converted into a strongly typed
+/// [`SecretKey`] before signing. The returned signature is serialized as raw
+/// bytes so it can be stored or transmitted independently of the message.
+///
+/// # Arguments
+///
+/// * `secret_key_bytes` — raw bytes representing a Dilithium2 secret key.
+/// * `message` — arbitrary byte slice to sign.
+///
+/// # Returns
+///
+/// The raw detached signature bytes on success, or an error if the secret key
+/// bytes do not represent a valid Dilithium2 secret key.
+pub fn sign_with_dilithium2(secret_key_bytes: &[u8], message: &[u8]) -> Result<Vec<u8>, String> {
+    let secret_key = SecretKey::from_bytes(secret_key_bytes)
+        .map_err(|_| "Invalid Dilithium2 secret key format")?;
+    let signature = detached_sign(message, &secret_key);
+    Ok(signature.as_bytes().to_vec())
+}
+
 /// Loads a Dilithium2 keypair from disk previously saved with [`save_keys`].
 ///
 /// Reads `<user_id>.pub` and `<user_id>.sec` and deserialises them back into
@@ -129,3 +153,5 @@ pub struct FriendshipProof {
     /// Raw Dilithium2 detached signature bytes over the attested message.
     pub signature: Vec<u8>,
 }
+
+
