@@ -1,8 +1,8 @@
 use encoding::base64::{EncodeImpl, EncodeSecure};
-use rand::rngs::OsRng;
-use rsa::Oaep;
-use rsa::{RsaPrivateKey, RsaPublicKey};
-use sha2::Sha512;
+use rand::rngs::SysRng;
+use rsa::sha2::Sha512;
+use rsa::{PrivateKey, PublicKey};
+
 
 /// RSA-4096 keypair for OAEP encryption and decryption.
 ///
@@ -12,8 +12,8 @@ use sha2::Sha512;
 ///
 /// Ciphertexts are returned as Base64-encoded strings for convenient transport.
 pub struct Rsa4096 {
-    private_key: RsaPrivateKey,
-    public_key: RsaPublicKey,
+    private_key: PrivateKey,
+    public_key: PublicKey,
 }
 
 impl Default for Rsa4096 {
@@ -23,6 +23,7 @@ impl Default for Rsa4096 {
 }
 
 impl Rsa4096 {
+
     /// Generates a fresh RSA-4096 keypair using the OS CSPRNG.
     ///
     /// Key generation at 4096 bits is computationally intensive and may take
@@ -32,12 +33,14 @@ impl Rsa4096 {
     ///
     /// Panics if the OS fails to provide sufficient entropy for key generation.
     pub fn new() -> Self {
-        let mut rng = OsRng;
-        let private_key =
-            RsaPrivateKey::new(&mut rng, 4096).expect("RSA-4096 key generation failed");
-        let public_key = RsaPublicKey::from(&private_key);
+        let mut rng = SysRng;
 
-        Rsa4096 {
+        let private_key = PrivateKey::new(&mut rng, 4096)
+            .expect("RSA-4096 key generation failed");
+
+        let public_key = private_key.to_public_key();
+
+        Self {
             private_key,
             public_key,
         }
@@ -57,12 +60,10 @@ impl Rsa4096 {
     ///
     /// Panics if encryption fails, which should not occur under normal conditions.
     pub fn encrypt(&self, message: &[u8]) -> String {
-        let mut rng = OsRng;
-        let padding = Oaep::new::<Sha512>();
-        let encrypted = self
-            .public_key
-            .encrypt(&mut rng, padding, message)
-            .expect("RSA-4096 OAEP encryption failed");
+        let encrypted = self.public_key
+            .oaep_encrypt::<Sha512>(message)
+            .expect("RSA-OAEP encryption failed");
+
         EncodeImpl::base64encode(&encrypted)
     }
 
@@ -78,10 +79,11 @@ impl Rsa4096 {
     /// (e.g. wrong key, corrupted ciphertext).
     pub fn decrypt(&self, encrypted_string: &str) -> Vec<u8> {
         let encrypted_bytes =
-            EncodeImpl::base64_vecdecode(encrypted_string).expect("Invalid base64 ciphertext");
-        let padding = Oaep::new::<Sha512>();
+            EncodeImpl::base64_vecdecode(encrypted_string)
+                .expect("Invalid Base64 ciphertext");
+
         self.private_key
-            .decrypt(padding, &encrypted_bytes)
-            .unwrap_or_else(|_| panic!("RSA-4096 OAEP decryption failed"))
+            .oaep_decrypt::<Sha512>(&encrypted_bytes)
+            .expect("RSA-OAEP decryption failed")
     }
 }

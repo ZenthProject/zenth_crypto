@@ -1,5 +1,5 @@
 use hashing::hash::CryptographicHash;
-use pqcrypto_dilithium::dilithium2::PublicKey;
+use pqcrypto_mldsa::mldsa44::PublicKey;
 use pqcrypto_traits::sign::PublicKey as PublicKeyTrait;
 use kdf::argon2id::Argon2idHasher;
 use argon2::password_hash::SaltString;

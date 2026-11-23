@@ -1,12 +1,22 @@
+
 use pqcrypto_traits::sign::{
-    DetachedSignature as TraitDetachedSignature, PublicKey as TraitPublicKey,
+    DetachedSignature as TraitDetachedSignature,
+    PublicKey as TraitPublicKey,
     SecretKey as TraitSecretKey,
 };
+
 use serde::{Deserialize, Serialize};
 use std::fs;
-use pqcrypto_dilithium::dilithium2::{
-    DetachedSignature, PublicKey, SecretKey, detached_sign, keypair, verify_detached_signature,
+
+use pqcrypto_mldsa::mldsa44::{
+    DetachedSignature,
+    PublicKey,
+    SecretKey,
+    detached_sign,
+    keypair,
+    verify_detached_signature,
 };
+
 
 /// Generates a fresh Dilithium2 keypair suitable for signing and verification.
 ///
@@ -125,11 +135,11 @@ pub fn load_keys(user_id: &str) -> (PublicKey, SecretKey) {
     let pub_bytes = fs::read(format!("{}.pub", user_id)).expect("public key file");
     let sec_bytes = fs::read(format!("{}.sec", user_id)).expect("secret key file");
     (
-        <pqcrypto_dilithium::dilithium2::PublicKey as pqcrypto_traits::sign::PublicKey>::from_bytes(
+        <pqcrypto_mldsa::mldsa44::PublicKey as pqcrypto_traits::sign::PublicKey>::from_bytes(
             &pub_bytes,
         )
         .expect("valid public key bytes"),
-        <pqcrypto_dilithium::dilithium2::SecretKey as pqcrypto_traits::sign::SecretKey>::from_bytes(
+        <pqcrypto_mldsa::mldsa44::SecretKey as pqcrypto_traits::sign::SecretKey>::from_bytes(
             &sec_bytes,
         )
         .expect("valid secret key bytes"),

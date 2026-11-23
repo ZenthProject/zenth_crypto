@@ -2,7 +2,7 @@ use kem::{KeyPair,KeyType};
 use asymmetric::dilithium::dilithium::generate_user_key;
 use rand08::rngs::OsRng as OsRng08;
 use pqcrypto_traits::sign::{PublicKey as PublicKeyTrait, SecretKey as SecretKeyTrait};
-use pqcrypto_dilithium::dilithium2::{PublicKey, SecretKey};
+use pqcrypto_mldsa::mldsa44::{PublicKey, SecretKey};
 use x25519_dalek::{StaticSecret, PublicKey as X25519PublicKey};
 
 /// Generate a X25519 keypair for ECDH key exchange
